@@ -1,6 +1,25 @@
-class Game {
+<script>
+  import { createEventDispatcher, onDestroy, onMount } from 'svelte';
+  import {
+    INITIAL_SNAKE,
+    TILES_SQUARE_ROOT,
+    MOVE_TIME,
+    MAP,
+    TILES,
+  } from './constants';
+  import { gameStatus } from './status';
+
+  let gameOver;
+
+  gameStatus.subscribe((value) => (gameOver = value));
 
   let snakes = JSON.parse(JSON.stringify(INITIAL_SNAKE));
+
+  const dispatch = createEventDispatcher();
+
+  $: dispatch('snakes', {
+    snakes,
+  });
 
   const getFood = () => {
     const freeTiles = TILES.filter(
@@ -82,5 +101,62 @@ class Game {
     interval = setInterval(oneStep, MOVE_TIME);
   };
 
+  onMount(() => {
+    interval = setInterval(oneStep, MOVE_TIME);
 
-}
+    window.addEventListener('keydown', changeDirection);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('keydown', changeDirection);
+    };
+  });
+</script>
+
+<div class="field">
+  {#each MAP as row, row_index}
+    <div class="row">
+      {#each row as columnElement, column_index}
+        {#if snakes.some((snake) => snake.x == row_index && snake.y == column_index && snake.head)}
+          <div class="columnElement snake head" />
+        {:else if snakes.some((snake) => snake.x == row_index && snake.y == column_index)}
+          <div class="columnElement snake" />
+        {:else if food.x == row_index && food.y == column_index}
+          <div class="columnElement food" />
+        {:else}
+          <div class="columnElement " />
+        {/if}
+      {/each}
+    </div>
+  {/each}
+</div>
+
+<style>
+  .field {
+    width: fit-content;
+    margin: auto;
+  }
+
+  .row {
+    display: flex;
+    width: fit-content;
+  }
+
+  .columnElement {
+    background-color: var(--tile-color);
+    width: var(--tile-size);
+    height: var(--tile-size);
+    margin: 1px;
+  }
+
+  .snake {
+    background-color: green;
+  }
+
+  .food {
+    background-color: red;
+  }
+  .head {
+    background-color: orange;
+  }
+</style>
