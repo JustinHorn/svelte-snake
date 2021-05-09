@@ -111,7 +111,20 @@
       window.removeEventListener('keydown', changeDirection);
     };
   });
+
+  const restart = () => {
+    gameStatus.set(false);
+    food = getFood();
+
+    snakes = JSON.parse(JSON.stringify(INITIAL_SNAKE));
+    clearInterval(interval);
+    interval = setInterval(oneStep, MOVE_TIME);
+  };
 </script>
+
+{#if gameOver}
+  <button on:click={restart}> Restart!</button>
+{/if}
 
 <div class="field">
   {#each MAP as row, row_index}
